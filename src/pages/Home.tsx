@@ -1,23 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MessageSquare } from "lucide-react";
 import { ChatInput } from "@/components/ChatInput";
 import { ExamplePrompts } from "@/components/ExamplePrompts";
-import { toast } from "@/hooks/use-toast";
 
 export default function Home() {
-  const [messages, setMessages] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const handleSendMessage = (message: string) => {
-    setMessages([...messages, message]);
-    toast({
-      title: "Message Sent",
-      description: "Your app idea has been submitted for generation.",
-    });
+    // Navigate to split view with the prompt
+    navigate("/split-view", { state: { prompt: message } });
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-3xl space-y-8">
+      <div className="w-full max-w-3xl space-y-8 animate-fade-in">
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-orange-glow shadow-orange mx-auto">
@@ -40,20 +37,6 @@ export default function Home() {
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <ChatInput onSend={handleSendMessage} />
         </div>
-
-        {/* Messages Display */}
-        {messages.length > 0 && (
-          <div className="space-y-3">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className="rounded-lg bg-primary/10 border border-primary/20 p-4"
-              >
-                <p className="text-sm">{msg}</p>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
