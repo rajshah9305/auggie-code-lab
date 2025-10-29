@@ -36,7 +36,7 @@ All colors MUST be HSL.
     --input: 0 0% 90%;
     --ring: 16 100% 60%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 9%;
@@ -47,18 +47,17 @@ All colors MUST be HSL.
     --sidebar-border: 0 0% 93%;
     --sidebar-ring: 16 100% 60%;
 
-    /* Custom design tokens */
-    --orange-glow: 16 100% 70%;
-    --gradient-orange: linear-gradient(135deg, hsl(16 100% 60%), hsl(16 100% 70%));
-    --shadow-orange: 0 10px 40px -10px hsl(16 100% 60% / 0.3);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Custom tokens */
+    --chat-bg: 0 0% 98%;
+    --code-bg: 0 0% 97%;
+    --preview-bg: 0 0% 100%;
   }
 
   .dark {
     --background: 0 0% 9%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 9%;
+    --card: 0 0% 12%;
     --card-foreground: 0 0% 98%;
 
     --popover: 0 0% 9%;
@@ -79,7 +78,7 @@ All colors MUST be HSL.
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 15%;
+    --border: 0 0% 20%;
     --input: 0 0% 15%;
     --ring: 16 100% 60%;
 
@@ -91,6 +90,10 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 15%;
     --sidebar-ring: 16 100% 60%;
+
+    --chat-bg: 0 0% 9%;
+    --code-bg: 0 0% 11%;
+    --preview-bg: 0 0% 13%;
   }
 }
 

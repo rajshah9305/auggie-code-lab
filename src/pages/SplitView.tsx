@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { Code2, Eye, Loader2, Sparkles } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Code2, Eye } from "lucide-react";
+import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
+import { CodePreview } from "@/components/CodePreview";
+import { LivePreview } from "@/components/LivePreview";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Message {
   role: "user" | "assistant";
@@ -22,8 +25,8 @@ export default function SplitView() {
     css: "",
     html: "",
   });
+  const [activeView, setActiveView] = useState<"code" | "preview">("preview");
 
-  // Simulate code generation when prompt is received
   useEffect(() => {
     if (initialPrompt) {
       handleGenerate(initialPrompt);
@@ -34,7 +37,6 @@ export default function SplitView() {
     setMessages((prev) => [...prev, { role: "user", content: prompt }]);
     setIsGenerating(true);
 
-    // Simulate AI generation with delay
     setTimeout(() => {
       const code = generateCodeFromPrompt(prompt);
       setGeneratedCode(code);
@@ -42,7 +44,7 @@ export default function SplitView() {
         ...prev,
         {
           role: "assistant",
-          content: `I've generated a ${prompt.toLowerCase()} for you. Check the code and preview panels!`,
+          content: `I've created your ${prompt.toLowerCase()}. The app is now live in the preview! You can view the code in the Code tab and continue refining it.`,
         },
       ]);
       setIsGenerating(false);
@@ -50,7 +52,6 @@ export default function SplitView() {
   };
 
   const generateCodeFromPrompt = (prompt: string) => {
-    // Simulate different code based on prompt
     const lowerPrompt = prompt.toLowerCase();
     
     if (lowerPrompt.includes("todo") || lowerPrompt.includes("task")) {
@@ -58,7 +59,10 @@ export default function SplitView() {
         jsx: `import React, { useState } from 'react';
 
 function TodoApp() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState([
+    { id: 1, text: 'Learn React', done: false },
+    { id: 2, text: 'Build an app', done: false }
+  ]);
   const [input, setInput] = useState('');
 
   const addTodo = () => {
@@ -74,76 +78,104 @@ function TodoApp() {
     ));
   };
 
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+
   return (
-    <div className="todo-app">
-      <h1>My Todo List</h1>
-      <div className="input-group">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && addTodo()}
-          placeholder="Add a new task..."
-        />
-        <button onClick={addTodo}>Add</button>
+    <div className="app">
+      <div className="container">
+        <h1>✓ Todo List</h1>
+        <div className="input-group">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+            placeholder="What needs to be done?"
+          />
+          <button onClick={addTodo}>Add Task</button>
+        </div>
+        <ul className="todo-list">
+          {todos.map(todo => (
+            <li key={todo.id} className={todo.done ? 'done' : ''}>
+              <input
+                type="checkbox"
+                checked={todo.done}
+                onChange={() => toggleTodo(todo.id)}
+              />
+              <span>{todo.text}</span>
+              <button onClick={() => deleteTodo(todo.id)} className="delete">×</button>
+            </li>
+          ))}
+        </ul>
+        {todos.length === 0 && (
+          <p className="empty">No tasks yet. Add one above!</p>
+        )}
       </div>
-      <ul className="todo-list">
-        {todos.map(todo => (
-          <li key={todo.id} className={todo.done ? 'done' : ''}>
-            <input
-              type="checkbox"
-              checked={todo.done}
-              onChange={() => toggleTodo(todo.id)}
-            />
-            <span>{todo.text}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
+}`,
+        css: `.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-export default TodoApp;`,
-        css: `.todo-app {
+.container {
   max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
+  margin: 0 auto;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
 h1 {
   color: #FF6B35;
+  font-size: 2rem;
   margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .input-group {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
 
 input[type="text"] {
   flex: 1;
-  padding: 0.75rem;
-  border: 2px solid #eee;
+  padding: 0.875rem;
+  border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #FF6B35;
 }
 
 button {
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 1.5rem;
   background: #FF6B35;
   color: white;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
   font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+button:hover {
+  background: #ff5722;
+  transform: translateY(-2px);
 }
 
 .todo-list {
   list-style: none;
-  padding: 0;
 }
 
 .todo-list li {
@@ -151,24 +183,47 @@ button {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: #f9f9f9;
+  background: #f9fafb;
   border-radius: 8px;
   margin-bottom: 0.5rem;
+  transition: all 0.2s;
+}
+
+.todo-list li:hover {
+  background: #f3f4f6;
 }
 
 .todo-list li.done span {
   text-decoration: line-through;
-  color: #999;
+  color: #9ca3af;
+}
+
+.todo-list li span {
+  flex: 1;
+  font-size: 1rem;
+}
+
+.delete {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  background: #ef4444;
+}
+
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 2rem;
 }`,
         html: `<!DOCTYPE html>
 <html>
 <head>
   <title>Todo App</title>
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="root"></div>
-  <script src="app.jsx"></script>
 </body>
 </html>`,
       };
@@ -200,61 +255,84 @@ function Calculator() {
     switch(operator) {
       case '+': result = prevValue + current; break;
       case '-': result = prevValue - current; break;
-      case '*': result = prevValue * current; break;
-      case '/': result = prevValue / current; break;
+      case '×': result = prevValue * current; break;
+      case '÷': result = prevValue / current; break;
+      default: return;
     }
     
     setDisplay(String(result));
     setOperator(null);
+    setPrevValue(null);
+  };
+
+  const clear = () => {
+    setDisplay('0');
+    setOperator(null);
+    setPrevValue(null);
   };
 
   return (
-    <div className="calculator">
-      <div className="display">{display}</div>
-      <div className="buttons">
-        {[7,8,9,'/'].map(btn => (
-          <button key={btn} onClick={() => 
-            typeof btn === 'number' ? handleNumber(btn) : handleOperator(btn)
-          }>{btn}</button>
-        ))}
-        {[4,5,6,'*'].map(btn => (
-          <button key={btn} onClick={() => 
-            typeof btn === 'number' ? handleNumber(btn) : handleOperator(btn)
-          }>{btn}</button>
-        ))}
-        {[1,2,3,'-'].map(btn => (
-          <button key={btn} onClick={() => 
-            typeof btn === 'number' ? handleNumber(btn) : handleOperator(btn)
-          }>{btn}</button>
-        ))}
-        <button onClick={() => setDisplay('0')}>C</button>
-        <button onClick={() => handleNumber(0)}>0</button>
-        <button onClick={calculate}>=</button>
-        <button onClick={() => handleOperator('+')}>+</button>
+    <div className="app">
+      <div className="calculator">
+        <div className="display">{display}</div>
+        <div className="buttons">
+          <button onClick={clear} className="clear">C</button>
+          <button onClick={() => handleOperator('÷')}>÷</button>
+          <button onClick={() => handleOperator('×')}>×</button>
+          <button onClick={() => handleOperator('-')}>−</button>
+          
+          <button onClick={() => handleNumber(7)}>7</button>
+          <button onClick={() => handleNumber(8)}>8</button>
+          <button onClick={() => handleNumber(9)}>9</button>
+          <button onClick={() => handleOperator('+')} className="operator">+</button>
+          
+          <button onClick={() => handleNumber(4)}>4</button>
+          <button onClick={() => handleNumber(5)}>5</button>
+          <button onClick={() => handleNumber(6)}>6</button>
+          <button onClick={calculate} className="equals" rowSpan="2">=</button>
+          
+          <button onClick={() => handleNumber(1)}>1</button>
+          <button onClick={() => handleNumber(2)}>2</button>
+          <button onClick={() => handleNumber(3)}>3</button>
+          
+          <button onClick={() => handleNumber(0)} className="zero">0</button>
+          <button onClick={() => handleNumber('.')}>.</button>
+        </div>
       </div>
     </div>
   );
+}`,
+        css: `.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-export default Calculator;`,
-        css: `.calculator {
+.calculator {
   width: 320px;
-  margin: 3rem auto;
+  background: white;
+  border-radius: 20px;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8A5B 100%);
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
 .display {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 1.5rem;
-  border-radius: 8px;
+  background: #1f2937;
+  color: white;
+  padding: 2rem 1.5rem;
+  border-radius: 12px;
   text-align: right;
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 2.5rem;
+  font-weight: 300;
   margin-bottom: 1rem;
-  min-height: 60px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .buttons {
@@ -265,278 +343,250 @@ export default Calculator;`,
 
 button {
   padding: 1.25rem;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   border: none;
-  border-radius: 8px;
-  background: white;
+  border-radius: 12px;
+  background: #f3f4f6;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
   transition: all 0.2s;
 }
 
 button:hover {
+  background: #e5e7eb;
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 button:active {
   transform: scale(0.95);
+}
+
+.clear {
+  background: #ef4444;
+  color: white;
+}
+
+.clear:hover {
+  background: #dc2626;
+}
+
+.operator {
+  background: #FF6B35;
+  color: white;
+}
+
+.operator:hover {
+  background: #ff5722;
+}
+
+.equals {
+  background: #10b981;
+  color: white;
+  grid-row: span 2;
+}
+
+.equals:hover {
+  background: #059669;
+}
+
+.zero {
+  grid-column: span 2;
 }`,
         html: `<!DOCTYPE html>
 <html>
 <head>
   <title>Calculator</title>
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="root"></div>
-  <script src="app.jsx"></script>
 </body>
 </html>`,
       };
     }
 
-    // Default app
     return {
       jsx: `import React from 'react';
 
 function App() {
   return (
     <div className="app">
-      <div className="container">
+      <div className="hero">
         <h1>Welcome to Your App</h1>
         <p className="subtitle">${prompt}</p>
-        <div className="card">
-          <h2>Getting Started</h2>
-          <p>This is your generated application. Customize it as needed!</p>
+        <div className="cards">
+          <div className="card">
+            <h3>🚀 Fast</h3>
+            <p>Built with modern technologies</p>
+          </div>
+          <div className="card">
+            <h3>💎 Beautiful</h3>
+            <p>Stunning design out of the box</p>
+          </div>
+          <div className="card">
+            <h3>⚡ Powerful</h3>
+            <p>Everything you need to succeed</p>
+          </div>
         </div>
       </div>
     </div>
   );
-}
-
-export default App;`,
-      css: `* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.app {
+}`,
+      css: `.app {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.container {
-  max-width: 800px;
-  width: 100%;
+.hero {
+  max-width: 1000px;
+  text-align: center;
+  color: white;
 }
 
 h1 {
-  color: white;
-  font-size: 3rem;
+  font-size: 4rem;
   margin-bottom: 1rem;
-  text-align: center;
+  font-weight: 700;
 }
 
 .subtitle {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.25rem;
-  text-align: center;
-  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  opacity: 0.9;
+  margin-bottom: 3rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
 }
 
 .card {
   background: white;
-  border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  transition: transform 0.3s;
 }
 
-.card h2 {
+.card:hover {
+  transform: translateY(-8px);
+}
+
+.card h3 {
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
   color: #FF6B35;
-  margin-bottom: 1rem;
 }
 
 .card p {
-  color: #333;
+  color: #6b7280;
   line-height: 1.6;
 }`,
       html: `<!DOCTYPE html>
 <html>
 <head>
   <title>My App</title>
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="root"></div>
-  <script src="app.jsx"></script>
 </body>
 </html>`,
     };
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Split Panels Container */}
-      <div className="flex-1 overflow-hidden">
-        <PanelGroup direction="horizontal">
-          {/* Code Panel */}
-          <Panel defaultSize={50} minSize={30}>
-            <div className="h-full flex flex-col bg-muted/30">
-              <div className="border-b border-border p-3 flex items-center justify-between bg-background">
-                <div className="flex items-center gap-2">
-                  <Code2 className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-semibold">Code</span>
-                </div>
-                {isGenerating && (
-                  <div className="flex items-center gap-2 text-xs text-primary">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Generating...</span>
+    <div className="flex h-screen">
+      <PanelGroup direction="horizontal">
+        {/* Chat Panel */}
+        <Panel defaultSize={40} minSize={30} maxSize={50}>
+          <div className="flex flex-col h-full bg-chat-bg border-r border-border">
+            {/* Chat Header */}
+            <div className="border-b border-border p-4 bg-card">
+              <h2 className="font-semibold text-lg">Chat</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Describe what you want to build
+              </p>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {messages.length === 0 && (
+                  <div className="text-center text-muted-foreground py-12">
+                    <p className="text-sm">Start by describing your app idea</p>
                   </div>
                 )}
-              </div>
-
-              <ScrollArea className="flex-1">
-                <Tabs defaultValue="jsx" className="h-full">
-                  <div className="border-b border-border px-3 bg-background">
-                    <TabsList className="bg-transparent h-10">
-                      <TabsTrigger value="jsx">App.jsx</TabsTrigger>
-                      <TabsTrigger value="css">styles.css</TabsTrigger>
-                      <TabsTrigger value="html">index.html</TabsTrigger>
-                    </TabsList>
-                  </div>
-                  
-                  <TabsContent value="jsx" className="mt-0 p-6">
-                    {generatedCode.jsx ? (
-                      <pre className="text-sm font-mono">
-                        <code>{generatedCode.jsx}</code>
-                      </pre>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                        <Sparkles className="h-12 w-12 mb-4" />
-                        <p>Code will appear here after generation</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="css" className="mt-0 p-6">
-                    {generatedCode.css ? (
-                      <pre className="text-sm font-mono">
-                        <code>{generatedCode.css}</code>
-                      </pre>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                        <Sparkles className="h-12 w-12 mb-4" />
-                        <p>CSS will appear here after generation</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="html" className="mt-0 p-6">
-                    {generatedCode.html ? (
-                      <pre className="text-sm font-mono">
-                        <code>{generatedCode.html}</code>
-                      </pre>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                        <Sparkles className="h-12 w-12 mb-4" />
-                        <p>HTML will appear here after generation</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </ScrollArea>
-            </div>
-          </Panel>
-
-          {/* Resize Handle */}
-          <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
-
-          {/* Preview Panel */}
-          <Panel defaultSize={50} minSize={30}>
-            <div className="h-full flex flex-col bg-background">
-              <div className="border-b border-border p-3 flex items-center gap-2 bg-background">
-                <Eye className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold">Preview</span>
-              </div>
-              
-              <ScrollArea className="flex-1">
-                <div className="p-6">
-                  {generatedCode.jsx ? (
-                    <div className="border border-border rounded-lg overflow-hidden">
-                      <iframe
-                        srcDoc={`
-                          <!DOCTYPE html>
-                          <html>
-                            <head>
-                              <style>${generatedCode.css}</style>
-                            </head>
-                            <body>
-                              <div id="root"></div>
-                              <script type="module">
-                                ${generatedCode.jsx.replace('export default', 'const Component =')}
-                                
-                                const root = document.getElementById('root');
-                                root.innerHTML = '<div style="padding: 20px;">Preview rendering...</div>';
-                              </script>
-                            </body>
-                          </html>
-                        `}
-                        className="w-full h-[600px] border-0"
-                        title="Preview"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-border rounded-lg">
-                      <Eye className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">Preview will appear here</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
-          </Panel>
-        </PanelGroup>
-      </div>
-
-      {/* Chat Section at Bottom */}
-      <div className="border-t border-border bg-background">
-        <div className="max-w-4xl mx-auto p-4">
-          {/* Chat History */}
-          {messages.length > 0 && (
-            <ScrollArea className="max-h-32 mb-3">
-              <div className="space-y-2">
                 {messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`text-sm p-2 rounded-lg ${
-                      msg.role === "user"
-                        ? "bg-primary/10 border border-primary/20 ml-8"
-                        : "bg-muted mr-8"
-                    }`}
-                  >
-                    <span className="font-semibold text-xs uppercase text-muted-foreground">
-                      {msg.role === "user" ? "You" : "Assistant"}:
-                    </span>
-                    <p className="mt-1">{msg.content}</p>
-                  </div>
+                  <ChatMessage key={idx} {...msg} />
                 ))}
+                {isGenerating && (
+                  <ChatMessage
+                    role="assistant"
+                    content=""
+                    isLoading
+                  />
+                )}
               </div>
             </ScrollArea>
-          )}
-          
-          {/* Input */}
-          <ChatInput
-            onSend={handleGenerate}
-            placeholder="Modify your app or create a new one..."
-          />
-        </div>
-      </div>
+
+            {/* Input */}
+            <div className="border-t border-border p-4 bg-card">
+              <ChatInput
+                onSend={handleGenerate}
+                placeholder="Describe your app or request changes..."
+              />
+            </div>
+          </div>
+        </Panel>
+
+        {/* Resize Handle */}
+        <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+
+        {/* Code/Preview Panel */}
+        <Panel defaultSize={60} minSize={50}>
+          <div className="flex flex-col h-full">
+            {/* Tabs */}
+            <Tabs
+              value={activeView}
+              onValueChange={(v) => setActiveView(v as "code" | "preview")}
+              className="flex-1 flex flex-col"
+            >
+              <div className="border-b border-border bg-card">
+                <TabsList className="w-full justify-start rounded-none h-12 bg-transparent p-0">
+                  <TabsTrigger
+                    value="preview"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12 px-6"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Preview
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="code"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12 px-6"
+                  >
+                    <Code2 className="h-4 w-4 mr-2" />
+                    Code
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="preview" className="flex-1 mt-0">
+                <LivePreview jsx={generatedCode.jsx} css={generatedCode.css} />
+              </TabsContent>
+
+              <TabsContent value="code" className="flex-1 mt-0">
+                <CodePreview {...generatedCode} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </Panel>
+      </PanelGroup>
     </div>
   );
 }
