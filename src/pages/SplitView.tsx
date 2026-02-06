@@ -6,6 +6,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { CodePreview } from "@/components/CodePreview";
 import { LivePreview } from "@/components/LivePreview";
+import { BackendStatus } from "@/components/BackendStatus";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -507,11 +508,14 @@ h1 {
         <Panel defaultSize={40} minSize={30} maxSize={50}>
           <div className="flex flex-col h-full bg-chat-bg border-r border-border">
             {/* Chat Header */}
-            <div className="border-b border-border p-4 bg-card">
-              <h2 className="font-semibold text-lg">Chat</h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Describe what you want to build
-              </p>
+            <div className="border-b border-border p-4 bg-card space-y-3">
+              <div>
+                <h2 className="font-semibold text-lg">Chat</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Describe what you want to build
+                </p>
+              </div>
+              <BackendStatus />
             </div>
 
             {/* Messages */}
