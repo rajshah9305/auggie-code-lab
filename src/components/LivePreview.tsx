@@ -112,12 +112,12 @@ export function LivePreview({ jsx, css }: LivePreviewProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-6 flex justify-center">
-        <div className={cn("transition-all duration-300", getPreviewWidth())}>
+      <div className="flex-1 overflow-auto p-2 sm:p-4 md:p-6 flex justify-center">
+        <div className={cn("transition-all duration-300 w-full", getPreviewWidth())}>
           <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-border">
             <iframe
               srcDoc={iframeSrcDoc}
-              className="w-full h-[600px] border-0"
+              className="w-full min-h-[400px] h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] border-0"
               title="Live Preview"
               sandbox="allow-scripts"
             />

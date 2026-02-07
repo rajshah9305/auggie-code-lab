@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { Code2, Eye } from "lucide-react";
+import { Code2, Eye, MessageSquare, PanelLeftClose, PanelLeft } from "lucide-react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { CodePreview } from "@/components/CodePreview";
@@ -9,6 +9,8 @@ import { LivePreview } from "@/components/LivePreview";
 import { BackendStatus } from "@/components/BackendStatus";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   role: "user" | "assistant";
@@ -27,6 +29,8 @@ export default function SplitView() {
     html: "",
   });
   const [activeView, setActiveView] = useState<"code" | "preview">("preview");
+  const [showChat, setShowChat] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (initialPrompt) {
@@ -501,59 +505,143 @@ h1 {
     };
   };
 
+  // Mobile layout with tabs for chat/preview switching
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-screen">
+        <Tabs defaultValue="chat" className="flex-1 flex flex-col">
+          <div className="border-b border-border bg-card">
+            <TabsList className="w-full grid grid-cols-3 rounded-none h-12 bg-transparent p-0">
+              <TabsTrigger
+                value="chat"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Chat
+              </TabsTrigger>
+              <TabsTrigger
+                value="preview"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Preview
+              </TabsTrigger>
+              <TabsTrigger
+                value="code"
+                className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12"
+              >
+                <Code2 className="h-4 w-4 mr-2" />
+                Code
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="chat" className="flex-1 mt-0 flex flex-col">
+            <div className="flex flex-col h-full bg-chat-bg">
+              <div className="border-b border-border p-3 bg-card space-y-2">
+                <h2 className="font-semibold">Chat</h2>
+                <BackendStatus />
+              </div>
+              <ScrollArea className="flex-1 p-3">
+                <div className="space-y-3">
+                  {messages.length === 0 && (
+                    <div className="text-center text-muted-foreground py-8">
+                      <p className="text-sm">Start by describing your app idea</p>
+                    </div>
+                  )}
+                  {messages.map((msg, idx) => (
+                    <ChatMessage key={idx} {...msg} />
+                  ))}
+                  {isGenerating && (
+                    <ChatMessage role="assistant" content="" isLoading />
+                  )}
+                </div>
+              </ScrollArea>
+              <div className="border-t border-border p-3 bg-card">
+                <ChatInput
+                  onSend={handleGenerate}
+                  placeholder="Describe your app..."
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="preview" className="flex-1 mt-0">
+            <LivePreview jsx={generatedCode.jsx} css={generatedCode.css} />
+          </TabsContent>
+
+          <TabsContent value="code" className="flex-1 mt-0">
+            <CodePreview {...generatedCode} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
+  // Desktop layout with resizable panels
   return (
     <div className="flex h-screen">
       <PanelGroup direction="horizontal">
         {/* Chat Panel */}
-        <Panel defaultSize={40} minSize={30} maxSize={50}>
-          <div className="flex flex-col h-full bg-chat-bg border-r border-border">
-            {/* Chat Header */}
-            <div className="border-b border-border p-4 bg-card space-y-3">
-              <div>
-                <h2 className="font-semibold text-lg">Chat</h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Describe what you want to build
-                </p>
-              </div>
-              <BackendStatus />
-            </div>
-
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {messages.length === 0 && (
-                  <div className="text-center text-muted-foreground py-12">
-                    <p className="text-sm">Start by describing your app idea</p>
+        {showChat && (
+          <Panel defaultSize={35} minSize={25} maxSize={50}>
+            <div className="flex flex-col h-full bg-chat-bg border-r border-border">
+              {/* Chat Header */}
+              <div className="border-b border-border p-4 bg-card space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-semibold text-lg">Chat</h2>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Describe what you want to build
+                    </p>
                   </div>
-                )}
-                {messages.map((msg, idx) => (
-                  <ChatMessage key={idx} {...msg} />
-                ))}
-                {isGenerating && (
-                  <ChatMessage
-                    role="assistant"
-                    content=""
-                    isLoading
-                  />
-                )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowChat(false)}
+                    className="h-8 w-8"
+                  >
+                    <PanelLeftClose className="h-4 w-4" />
+                  </Button>
+                </div>
+                <BackendStatus />
               </div>
-            </ScrollArea>
 
-            {/* Input */}
-            <div className="border-t border-border p-4 bg-card">
-              <ChatInput
-                onSend={handleGenerate}
-                placeholder="Describe your app or request changes..."
-              />
+              {/* Messages */}
+              <ScrollArea className="flex-1 p-4">
+                <div className="space-y-4">
+                  {messages.length === 0 && (
+                    <div className="text-center text-muted-foreground py-12">
+                      <p className="text-sm">Start by describing your app idea</p>
+                    </div>
+                  )}
+                  {messages.map((msg, idx) => (
+                    <ChatMessage key={idx} {...msg} />
+                  ))}
+                  {isGenerating && (
+                    <ChatMessage role="assistant" content="" isLoading />
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Input */}
+              <div className="border-t border-border p-4 bg-card">
+                <ChatInput
+                  onSend={handleGenerate}
+                  placeholder="Describe your app or request changes..."
+                />
+              </div>
             </div>
-          </div>
-        </Panel>
+          </Panel>
+        )}
 
         {/* Resize Handle */}
-        <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+        {showChat && (
+          <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+        )}
 
         {/* Code/Preview Panel */}
-        <Panel defaultSize={60} minSize={50}>
+        <Panel defaultSize={showChat ? 65 : 100} minSize={50}>
           <div className="flex flex-col h-full">
             {/* Tabs */}
             <Tabs
@@ -563,19 +651,29 @@ h1 {
             >
               <div className="border-b border-border bg-card">
                 <TabsList className="w-full justify-start rounded-none h-12 bg-transparent p-0">
+                  {!showChat && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowChat(true)}
+                      className="h-12 w-12 rounded-none border-r border-border"
+                    >
+                      <PanelLeft className="h-4 w-4" />
+                    </Button>
+                  )}
                   <TabsTrigger
                     value="preview"
-                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12 px-6"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12 px-4 sm:px-6"
                   >
                     <Eye className="h-4 w-4 mr-2" />
-                    Preview
+                    <span className="hidden sm:inline">Preview</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="code"
-                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12 px-6"
+                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-12 px-4 sm:px-6"
                   >
                     <Code2 className="h-4 w-4 mr-2" />
-                    Code
+                    <span className="hidden sm:inline">Code</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
