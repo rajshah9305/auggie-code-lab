@@ -1,5 +1,5 @@
 import { Monitor, Smartphone, Tablet } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,51 @@ export function LivePreview({ jsx, css }: LivePreviewProps) {
         return "w-full";
     }
   };
+
+  const iframeSrcDoc = useMemo(() => {
+    if (!jsx) return "";
+    
+    // Clean up the JSX code for the iframe
+    const cleanedJsx = jsx
+      .replace(/import React.*?from ['"]react['"];?\n?/g, '')
+      .replace(/import \{ useState \}.*?from ['"]react['"];?\n?/g, '')
+      .replace(/import \{.*?\}.*?from ['"]react['"];?\n?/g, '');
+
+    return `
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      ${css}
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel" data-presets="react">
+      const { useState, useEffect, useRef, useCallback, useMemo } = React;
+      
+      ${cleanedJsx}
+      
+      // Find the component function name
+      const componentMatch = \`${cleanedJsx}\`.match(/function\\s+(\\w+)/);
+      const ComponentName = componentMatch ? componentMatch[1] : null;
+      
+      if (ComponentName) {
+        const Component = eval(ComponentName);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(Component));
+      }
+    </script>
+  </body>
+</html>`;
+  }, [jsx, css]);
 
   if (!jsx) {
     return (
@@ -71,37 +116,10 @@ export function LivePreview({ jsx, css }: LivePreviewProps) {
         <div className={cn("transition-all duration-300", getPreviewWidth())}>
           <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-border">
             <iframe
-              srcDoc={`
-                <!DOCTYPE html>
-                <html>
-                  <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                      * { margin: 0; padding: 0; box-sizing: border-box; }
-                      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-                      ${css}
-                    </style>
-                  </head>
-                  <body>
-                    <div id="root"></div>
-                    <script type="module">
-                      try {
-                        ${jsx.replace("export default", "const Component =")}
-                        
-                        const root = document.getElementById('root');
-                        if (root) {
-                          root.innerHTML = '<div style="min-height: 100vh;">App is rendering...</div>';
-                        }
-                      } catch(e) {
-                        console.error('Preview error:', e);
-                      }
-                    </script>
-                  </body>
-                </html>
-              `}
+              srcDoc={iframeSrcDoc}
               className="w-full h-[600px] border-0"
               title="Live Preview"
+              sandbox="allow-scripts"
             />
           </div>
         </div>
