@@ -22,6 +22,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -65,6 +66,11 @@ export default {
         },
         preview: {
           bg: "hsl(var(--preview-bg))",
+        },
+        // Semantic status colors
+        success: {
+          DEFAULT: "hsl(142 76% 36%)",
+          foreground: "hsl(0 0% 100%)",
         },
       },
       borderRadius: {
