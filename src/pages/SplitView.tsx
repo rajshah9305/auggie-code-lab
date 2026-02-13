@@ -11,6 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -31,6 +33,7 @@ export default function SplitView() {
   const [activeView, setActiveView] = useState<"code" | "preview">("preview");
   const [showChat, setShowChat] = useState(true);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (initialPrompt) {
@@ -39,13 +42,18 @@ export default function SplitView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPrompt]);
 
-  const handleGenerate = (prompt: string) => {
+  const handleGenerate = async (prompt: string) => {
     setMessages((prev) => [...prev, { role: "user", content: prompt }]);
     setIsGenerating(true);
 
-    setTimeout(() => {
-      const code = generateCodeFromPrompt(prompt);
-      setGeneratedCode(code);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-code", {
+        body: { prompt },
+      });
+
+      if (error) throw error;
+
+      setGeneratedCode(data);
       setMessages((prev) => [
         ...prev,
         {
@@ -53,8 +61,23 @@ export default function SplitView() {
           content: `I've created your ${prompt.toLowerCase()}. The app is now live in the preview! You can view the code in the Code tab and continue refining it.`,
         },
       ]);
+    } catch (error) {
+      console.error("Generation error:", error);
+      toast({
+        title: "Generation Failed",
+        description: "There was an error generating your app. Please check your Groq API key.",
+        variant: "destructive",
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Sorry, I encountered an error while generating your app. Please try again.",
+        },
+      ]);
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   const generateCodeFromPrompt = (prompt: string) => {
