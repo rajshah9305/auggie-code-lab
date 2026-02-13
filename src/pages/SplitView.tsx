@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Code2, Eye, MessageSquare, PanelLeftClose, PanelLeft } from "lucide-react";
@@ -42,7 +42,7 @@ export default function SplitView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPrompt]);
 
-  const handleGenerate = async (prompt: string) => {
+  const handleGenerate = useCallback(async (prompt: string) => {
     setMessages((prev) => [...prev, { role: "user", content: prompt }]);
     setIsGenerating(true);
 
@@ -78,7 +78,7 @@ export default function SplitView() {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [toast]);
 
   const generateCodeFromPrompt = (prompt: string) => {
     const lowerPrompt = prompt.toLowerCase();

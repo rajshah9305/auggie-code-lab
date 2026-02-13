@@ -27,7 +27,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [
           {
             role: "system",
@@ -51,11 +51,18 @@ serve(async (req) => {
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
+        temperature: 1,
+        max_completion_tokens: 65536,
+        top_p: 1,
       }),
     });
 
     const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error.message || "Groq API error");
+    }
+
     const content = JSON.parse(data.choices[0].message.content);
 
     return new Response(JSON.stringify(content), {
