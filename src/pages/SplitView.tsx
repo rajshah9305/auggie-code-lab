@@ -36,6 +36,7 @@ export default function SplitView() {
     if (initialPrompt) {
       handleGenerate(initialPrompt);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPrompt]);
 
   const handleGenerate = (prompt: string) => {
