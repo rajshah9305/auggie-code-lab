@@ -39,6 +39,16 @@ This project is built with:
 
 This project is configured for deployment on **Vercel**. Simply connect your GitHub repository to Vercel and it will automatically deploy your application.
 
+## Configuration
+
+To use the AI generation features, you need to set the `GROQ_API_KEY` in your Supabase project's Edge Functions secrets:
+
+```sh
+supabase secrets set GROQ_API_KEY=your_groq_api_key
+```
+
+The project is configured to use the `openai/gpt-oss-120b` model via Groq.
+
 ## Features
 
 - **Instant Generation**: Build apps in seconds from natural language descriptions.
