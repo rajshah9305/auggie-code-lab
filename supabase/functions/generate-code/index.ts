@@ -87,7 +87,8 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Function error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errMsg = error instanceof Error ? error.message : "Unknown error";
+    return new Response(JSON.stringify({ error: errMsg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

@@ -4,8 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Home as HomeIcon, Code2 } from "lucide-react";
+import { Sparkles, Home as HomeIcon, Code2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ApiKeySettings } from "@/components/ApiKeySettings";
 import Home from "./pages/Home";
 import SplitView from "./pages/SplitView";
 import NotFound from "./pages/NotFound";
@@ -59,6 +60,7 @@ function AppHeader() {
               <span className="hidden sm:inline">Home</span>
             </Button>
           )}
+          <ApiKeySettings />
         </div>
       </div>
     </header>

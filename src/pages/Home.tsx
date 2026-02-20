@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles, Zap, Code2, Layers } from "lucide-react";
 import { ChatInput } from "@/components/ChatInput";
-import { ExamplePrompts } from "@/components/ExamplePrompts";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -72,15 +71,6 @@ export default function Home() {
               <div className="text-xs text-muted-foreground">{feature.desc}</div>
             </motion.div>
           ))}
-        </motion.div>
-
-        {/* Example Prompts */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <ExamplePrompts onSelectPrompt={handleSendMessage} />
         </motion.div>
 
         {/* Chat Input */}
