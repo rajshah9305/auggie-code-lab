@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { ChatInput } from "@/components/ChatInput";
+import { MvpBadge } from "@/components/MvpBadge";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -31,6 +32,9 @@ export default function Home() {
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight">
             What do you want to build?
           </h1>
+          <div className="flex justify-center">
+            <MvpBadge size="md" />
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-sm sm:max-w-md mx-auto">
             Describe your idea and watch it come to life.
           </p>
