@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Home as HomeIcon, Code2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
+import { MvpBadge } from "@/components/MvpBadge";
 import Home from "./pages/Home";
 import SplitView from "./pages/SplitView";
 import NotFound from "./pages/NotFound";
@@ -31,7 +32,10 @@ function AppHeader() {
             <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="text-left">
-            <div className="text-sm font-bold tracking-tight">RAJ AI</div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-bold tracking-tight">RAJ AI</span>
+              <MvpBadge size="sm" />
+            </div>
             <div className="text-[10px] font-medium text-muted-foreground tracking-wider uppercase">
               App Builder
             </div>
